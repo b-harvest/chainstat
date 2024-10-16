@@ -86,10 +86,8 @@ func main() {
 		avgTPSPer100Blocks = append(avgTPSPer100Blocks, tps)
 
 		// Output the statistics for this range
-		fmt.Printf("Blocks %d to %d:\n", i, endRange)
-		fmt.Printf("  Average Tx Count: %.2f\n", avgTxs)
-		fmt.Printf("  Average Block Time: %.2f seconds\n", avgBlockTime)
-		fmt.Printf("  Average TPS: %.2f\n\n", tps)
+		fmt.Printf("Blocks %d-%d: AvgTxs: %.2f, AvgBlockTime: %.2fs, TPS=%.2f\n",
+			i, endRange, avgTxs, avgBlockTime, tps)
 	}
 
 	// You can use avgTxsPer100Blocks, avgBlockTimePer100Blocks, avgTPSPer100Blocks for plotting graphs later
