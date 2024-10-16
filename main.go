@@ -24,20 +24,18 @@ func main() {
 		fmt.Println("Usage: go run main.go <start_block_height> <end_block_height>")
 		os.Exit(1)
 	}
-	startBlockHeight := args[0]
-	endBlockHeight := args[1]
-	if startBlockHeight > endBlockHeight {
-		fmt.Println("start_block_height must be less than end_block_height")
-		os.Exit(1)
-	}
-	startBlockNum, err := strconv.ParseInt(startBlockHeight, 10, 64)
+	startBlockHeight, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
 		fmt.Println("start_block_height must be a valid integer")
 		os.Exit(1)
 	}
-	endBlockNum, err := strconv.ParseInt(endBlockHeight, 10, 64)
+	endBlockHeight, err := strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		fmt.Println("end_block_height must be a valid integer")
+		os.Exit(1)
+	}
+	if startBlockHeight > endBlockHeight {
+		fmt.Println("start_block_height must be less than end_block_height")
 		os.Exit(1)
 	}
 
@@ -47,13 +45,13 @@ func main() {
 	var avgTPSPer100Blocks []float64
 
 	// Loop through blocks in 100-block intervals
-	for i := startBlockNum; i <= endBlockNum; i += 100 {
+	for i := startBlockHeight; i <= endBlockHeight; i += 100 {
 		var totalTxs int
 
 		// Define the last block in the current 100-block range
 		endRange := i + 99
-		if endRange > endBlockNum {
-			endRange = endBlockNum
+		if endRange > endBlockHeight {
+			endRange = endBlockHeight
 		}
 
 		// Process each block in the 100-block range
