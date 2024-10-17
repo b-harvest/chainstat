@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/cometbft/cometbft/abci/types"
 	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 )
 
@@ -72,6 +73,18 @@ func main() {
 				// Increment the total number of transactions
 				mu.Lock()
 				totalTxs += len(currBlockResult.TxsResults)
+				// check if there are any failed transactions
+				for _, txResult := range currBlockResult.TxsResults {
+					for _, ev := range txResult.Events {
+						if ev.GetType() != "ethereum_tx" {
+							continue
+						}
+						if isFailedEthTx(ev) {
+							totalTxs--
+							break
+						}
+					}
+				}
 				mu.Unlock()
 			}(j)
 		}
@@ -104,4 +117,16 @@ func main() {
 	}
 
 	// You can use avgTxsPer100Blocks, avgBlockTimePer100Blocks, avgTPSPer100Blocks for plotting graphs later
+}
+
+// isFailedEthTx checks if given event is related with failed Ethereum transaction
+func isFailedEthTx(ev types.Event) bool {
+	for _, attr := range ev.GetAttributes() {
+		// https://github.com/b-harvest/ethermint/blob/2d35118b59d1ec73cf75b50e25008332f0f0867b/x/evm/types/events.go#L33
+		// doesn't use AttributeKeyEthereumTxFailed because I want to keep minimum dependency (don't want to import x/evm/types)
+		if attr.GetKey() == "ethereumTxFailed" {
+			return true
+		}
+	}
+	return false
 }
