@@ -75,6 +75,7 @@ func main() {
 				mu.Unlock()
 			}(j)
 		}
+		wg.Wait()
 
 		// Get block time difference between the start and end block
 		startBlockInfo, err := client.Block(context.Background(), &i)
