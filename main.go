@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 
 	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 )
@@ -44,6 +45,10 @@ func main() {
 	var avgBlockTimePer100Blocks []float64
 	var avgTPSPer100Blocks []float64
 
+	// go-routine related
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	// Loop through blocks in 100-block intervals
 	for i := startBlockHeight; i <= endBlockHeight; i += 100 {
 		var totalTxs int
@@ -56,12 +61,19 @@ func main() {
 
 		// Process each block in the 100-block range
 		for j := i; j <= endRange; j++ {
-			// Get the current block result
-			currBlockResult, err := client.BlockResults(context.Background(), &j)
-			if err != nil {
-				log.Fatalf("failed to get block results: %v", err)
-			}
-			totalTxs += len(currBlockResult.TxsResults)
+			wg.Add(1)
+			go func(blockNum int64) {
+				defer wg.Done()
+				// Get the current block result
+				currBlockResult, err := client.BlockResults(context.Background(), &blockNum)
+				if err != nil {
+					log.Fatalf("failed to get block results: %v", err)
+				}
+				// Increment the total number of transactions
+				mu.Lock()
+				totalTxs += len(currBlockResult.TxsResults)
+				mu.Unlock()
+			}(j)
 		}
 
 		// Get block time difference between the start and end block
