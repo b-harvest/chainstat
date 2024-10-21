@@ -75,6 +75,11 @@ func main() {
 				totalTxs += len(currBlockResult.TxsResults)
 				// check if there are any failed transactions
 				for _, txResult := range currBlockResult.TxsResults {
+					if txResult.GetCode() != 0 {
+						// failed transaction
+						totalTxs--
+						break
+					}
 					for _, ev := range txResult.Events {
 						if ev.GetType() != "ethereum_tx" {
 							continue
